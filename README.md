@@ -5,7 +5,7 @@ Gearlock Extensions made by me.
 `https://github.com/AXIM0S/gearlock-dev-kit`
 <br>
 ### GDK Usage
-For details on how to use this and more details.
+For details on how to use this and more details.<br>
 `https://supreme-gamers.com/gearlock/`
 
 # Extension files
