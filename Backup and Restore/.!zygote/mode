@@ -1,0 +1,7 @@
+0644 "!zygote.sh"
+0644 "install.sh"
+0755 "gearlock"
+0777 "gearlock/extension.sh"
+0775 ".!zygote"
+0664 ".!zygote/mode"
+0644 "uninstall.sh"
