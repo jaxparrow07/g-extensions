@@ -2,7 +2,7 @@
 
 
 # Change this according to Extension version
-EXT_VERSION="2.6"
+EXT_VERSION="3.0.2"
 
 opentime=`date +"%r"`
 date=`date +'%m/%d/%Y'`
@@ -377,9 +377,22 @@ geco "Required Permissions
 $Permissions
 "
 gecpc "Prompt" "="
+
+if [[ -d /data/data/$Packagename ]];then
+	update=true
+else
+	update=false
+fi
+
+if [[ $update == false ]];then
 geco "
 [!] Do you want to install $Appname [Y/n]: \c"
-read userpromt
+	read userpromt
+else
+	geco "
+[!] Do you want to update $Appname to $Version_name [Y/n]: \c"
+	read userpromt
+fi
 
 case $userpromt in
 
@@ -424,7 +437,7 @@ do
     $string)
     geco "
 [+] Installing Base Apk with $file : \c"
-    pm install "${Packagename}.apk" "$file"
+    pm install -r "${Packagename}.apk" "$file"
     break;
     ;;
     
@@ -432,7 +445,7 @@ do
     geco "
 [-] Skipping Language Configs"
     geco "[+] Installing Base Apk : \c"
-    pm install "${Packagename}.apk"
+    pm install -r "${Packagename}.apk"
 break;
 ;;
 
@@ -443,7 +456,7 @@ else
 
 geco  "
 [+] Installing Apk : \c"
-pm install "${Packagename}.apk"
+pm install -r "${Packagename}.apk"
 
 
 fi
@@ -462,21 +475,38 @@ fi
 
 if [ -d "Android" ]
 then
+	if [[ $update == false ]];then
 
-geco "${YELLOW}[-] Copying Game Files${RC}"
-gclone Android /sdcard/
-geco "${GREEN}[+] Copied Game Files${RC}"
+		geco "${YELLOW}[-] Copying Game Files${RC}"
+		gclone Android /sdcard/
+		geco "${GREEN}[+] Copied Game Files${RC}"
 
+	else
+		geco "${YELLOW}[-] Removing Current OBB${RC}"
+		rm "/sdcard/Android/obb/$Packagename" -r
+		geco "${YELLOW}[-] Copying Game Files${RC}"
+		gclone Android /sdcard/
+		geco "${GREEN}[+] Copied Game Files${RC}"
+	fi
 else
-geco "${YELLOW}[!] No Obb File Found${RC}"
-
+	geco "${YELLOW}[!] No Obb File Found${RC}"
 fi
-        geco "${GREEN}
+
+if [[ $update == false ]];then
+    geco "${GREEN}
 [+] Installed ${Appname} Successfully ${RC}"
+else
+	geco "${GREEN}
+[+] Updated ${Appname} Successfully ${RC}"
+fi
         rm "/data/XAPK/Temp/${filex}" -r
 
 opentime=`date +"%r"`
-echo "Installed ${Appname} Successfully on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
+if [[ $update == false ]];then
+	echo "Installed ${Appname} Successfully on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
+else
+	echo "Updated ${Appname} Successfully to $Version_name on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
+fi
 geco "${YELLOW}
 [!] Press any Key to go to Main Menu${RC}"
 read coninput
@@ -541,7 +571,11 @@ geco "
                                                   / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
                                                  /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|    "
 gecpc "Log File" "="
-gecca /sdcard/XAPK-log.txt
+if [[ -f /sdcard/XAPK-log.txt ]];then
+	gecca /sdcard/XAPK-log.txt
+else
+	geco "No Log found"
+fi
 geco "
 [-] Press any Key to to continue"
 read -n 1 something
