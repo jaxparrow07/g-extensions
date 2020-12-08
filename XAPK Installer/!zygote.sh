@@ -8,7 +8,7 @@ TYPE="Extension" #Specify (Package / Extension)
 
 AUTHOR="Jaxparrow" #Your name as the Developer/Owner/Packer
 
-VERSION="2.6" #Specify the Version of this package/extension
+VERSION="3.0.2" #Specify the Version of this package/extension
 
 SHORTDESC="Install XAPK files Easily" #Provide a short description about this package/extension
 
