@@ -2,7 +2,7 @@
 
 
 # Change this according to Extension version
-EXT_VERSION="3.0.2"
+EXT_VERSION="3.5"
 
 opentime=`date +"%r"`
 date=`date +'%m/%d/%Y'`
@@ -305,9 +305,9 @@ Min_sdk=$(cat manifest.json | jq -r '.min_sdk_version' )
 else
 
 if [[ -d "Android" ]];then
-insmod=1
+	insmod=1
 else
-insmod=2
+	insmod=2
 fi
 
 fi
@@ -331,8 +331,6 @@ Legacymode
 fi
 
 # Continue to Install in Normal mode if the value is 0
-
-
 
 # New UI
 
@@ -416,41 +414,51 @@ esac
 
 # Continue Installing without errors.
 
-splitcount=$(ls -1 config* 2>/dev/null | wc -l)
+splitcount=$(ls -1 config.*.apk 2>/dev/null | wc -l)
 
 if [[ $splitcount -ne 0 ]];then
 gecpc "Extra Configs" "="
-geco "Choose Your Extra Configs Manually. e.g config.en for English
-"
-files=( config* )
-shopt -s extglob
-string="@(${files[0]}"
-for((i=1;i<${#files[@]};i++))
-do
-    string+="|${files[$i]}"
-done
-string+=")"
-select file in "${files[@]}" "Skip"
-do
-    case $file in
 
-    $string)
-    geco "
-[+] Installing Base Apk with $file : \c"
-    pm install -r "${Packagename}.apk" "$file"
-    break;
-    ;;
-    
-    *)
-    geco "
-[-] Skipping Language Configs"
+options=( config.*.apk )
+
+menu() {
+	clear
+	gecpc "Extra Configs" "="
+	figlet -f small "Config Selection"
+    echo "Avaliable configs:"
+    for i in ${!options[@]}; do 
+        printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${options[i]}"
+    done
+    if [[ "$msg" ]]; then echo "$msg"; fi
+}
+
+prompt="
+Check an config (again to uncheck, ENTER when done): "
+while menu && read -rp "$prompt" num && [[ "$num" ]]; do
+    [[ "$num" != *[![:digit:]]* ]] &&
+    (( num > 0 && num <= ${#options[@]} )) ||
+    { msg="Invalid option: $num"; continue; }
+    ((num--)); msg="${options[num]} was ${choices[num]:+un}checked"
+    [[ "${choices[num]}" ]] && choices[num]="" || choices[num]="+"
+done
+
+var=$(printf ""; msg=" nothing"
+for i in ${!options[@]}; do 
+    [[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; }
+done)
+
+if [[ ! -z $var ]]; then
+	var=$(echo "$var" | sed 's/^.//')
+	arr=( $var )
+	geco "[+] Installing Base Apk with ${arr[@]} : \c"
+	pm install -r "${Packagename}.apk" ${arr[@]}
+
+else
+	
+	geco "[-] Skipping Configs"
     geco "[+] Installing Base Apk : \c"
     pm install -r "${Packagename}.apk"
-break;
-;;
-
-    esac
-done
+fi
 
 else
 
@@ -586,8 +594,14 @@ MainMenu
 clear
 figlet Clearing
 geco "Your XAPK-Installer Log file"
-rm /sdcard/XAPK-log.txt
-touch /sdcard/XAPK-log.txt
+
+if [[ -f /sdcard/XAPK-log.txt ]];then
+	rm /sdcard/XAPK-log.txt
+	touch /sdcard/XAPK-log.txt
+else
+	geco "No Log found"
+fi
+
 geco "
 "
 geco "Done"
