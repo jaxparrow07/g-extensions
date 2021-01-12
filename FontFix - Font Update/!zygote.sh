@@ -8,7 +8,7 @@ TYPE="Package" #Specify (Package / Extension)
 
 AUTHOR="Jaxparrow" #Your name as the Developer/Owner/Packer
 
-VERSION="1.1" #Specify the Version of this package/extension
+VERSION="1.3" #Specify the Version of this package/extension
 
 SHORTDESC="Updates font files to Pie Build. Fix Font Problems." #Provide a short description about this package/extension
 
