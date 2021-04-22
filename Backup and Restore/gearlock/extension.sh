@@ -2,401 +2,429 @@
 
 # Defining indicators
 
-WARNING="[${RED}!${RC}]"
-SUCCESS="[${GREEN}+${RC}]"
-CAUTION="[${YELLOW}-${RC}]"
-TASK="[${BLUE}*${RC}]"
+WARNING="[!]"
+SUCCESS="[+]"
+CAUTION="[-]"
+TASK="[*]"
+
+function g_clone() {
+(rsync -ah --info=progress2 "$@" -p) 2>&1 | \
+dialog --progressbox "..................... Progress  ======  Speed.............." 7 80
+}
+
 
 function AppBackup() {
-clear
-figlet Backup
-geco "
-++++ List of Available Packages +++++
 
-Select Any Package
+HEIGHT=25
+	WIDTH=60
+	CHOICE_HEIGHT=20
+	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+	TITLE="++++ List of Available Packages ++++"
+	MENU="Select Any Package"
+	
+    let i=0 # define counting variable
+	OPTIONS=() # define working array
+	while read -r line; do # process file by file
+    let i=$i+1
+    OPTIONS+=($i "$line")
+	done < <( pm list packages -3 | sed -e 's/package://g' )
+	ReadPackagename=$(dialog --clear --cancel-label "Exit" \
+	                --backtitle "$BACKTITLE" \
+	                --title "$TITLE" \
+	                --menu "$MENU" \
+	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
+	                "${OPTIONS[@]}" \
+	                2>&1 >/dev/tty)
+if [ $? -eq 0 ]; then # Exit with OK
+    ReadPackage=$(pm list packages -3 | sed -e 's/package://g' | sed "${ReadPackagename}!d")
+	Prefix="package:"
+	Packagepathget=$(pm path "$ReadPackage")
+	Package="${Packagepathget//$Prefix/}"
 
-"
-Pkgs=$(pm list packages)
-echo "$Pkgs" > /data/.Tempackage.jax
-LIST1=$(pm list packages -3 | sed -e 's/package://g')
-echo "$LIST1" > /data/.Templist.jax
-echo "Cancel" >> /data/.Templist.jax
-nl -s ")" /data/.Templist.jax
-geco " "
-read -p "Your Option >> " ReadPackagename
-ReadPackage=$(sed "${ReadPackagename}!d" /data/.Templist.jax)
-MAXLINES=$(wc -l /data/.Templist.jax | awk '{ print $1 }')
+            
+            HEIGHT=20
+            WIDTH=60
+            CHOICE_HEIGHT=20
+            BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+            TITLE="$CAUTION Selected $ReadPackage"
+            MENU="Backup What?
+        [ Note : It will only Backup Data/OBB if it exists ]
 
-if [[ "$ReadPackagename" -gt "$MAXLINES" ]];then
+        $CAUTION Note : Files means that are stored in Android folder for the Package . Data means the app's saved data.
+        Will restore everything back to normal. e.g Score, Account, Level, Points etc.,."
+            
+            OPTIONS=(
+        1 "Apk Only"
+        2 "Apk + Data ( Recommended )"
+        3 "Apk + OBB [ No Data Restore ]"
+        4 "Apk + OBB,AppData [ No Data Restore ]"
+        5 "Everything (Apk,Data,Files,AppData) - Slow"
+        6 "Cancel"
+        )
+            backupmethod=$(dialog --clear --cancel-label "Exit" \
+                            --backtitle "$BACKTITLE" \
+                            --title "$TITLE" \
+                            --menu "$MENU" \
+                            $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                            "${OPTIONS[@]}" \
+                            2>&1 >/dev/tty)
 
-geco "
-$WARNING Invalid Option"
-pausebreak
-AppBackup
-else
+        case $backupmethod in
+        1)
+            nout mkdir -p "/sdcard/GBackup/Apk/"
+            g_clone "$Package" "/sdcard/GBackup/Apk/${ReadPackage}.apk" 
 
-if [[ "$ReadPackage" == "Cancel" ]];then
-geco "
-$WARNING Aborted"
-pausebreak
-MainMenu
-fi
+            dialog --msgbox "$CAUTION Will be saved to Apk Folder in GBackup" 5 50
+            ;;
+        2)
 
-fi
+            dialog --msgbox "$CAUTION Can be restored only using this extension" 5 50
 
-geco "
-$CAUTION Selected $ReadPackage"
-Prefix="package:"
-Packagepathget=$(pm path "$ReadPackage")
-Package="${Packagepathget//$Prefix/}"
-geco "
+            rm /data/GBackup/* -rf
 
-Backup What?
-[ Note : It will only Backup Data/OBB if it exists ]
+            nout mkdir -p "/data/GBackup/"
 
-$CAUTION Note : Files means that are stored in Android folder for the Package . Data means the app's saved data.
-Will restore everything back to normal. ${YELLOW}e.g Score, Account, Level, Points etc.,.${RC}
+            g_clone "$Package" "/data/GBackup/${ReadPackage}.apk" 
 
-1) Apk Only
-2) Apk + Data ( Recommended )
-3) Apk + OBB [ No Data Restore ]
-4) Apk + OBB,AppData [ No Data Restore ]
-5) Everything (Apk,Data,Files,AppData) - Slow
-6) Cancel
-"
-read -p "Your Option >> " backupmethod
+            echo "$ReadPackage" > "/data/GBackup/Info.jax"
+            mkdir -p "/data/GBackup/data/"
+            mkdir -p "/data/GBackup/data/$ReadPackage/"
+            g_clone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" 
 
-case $backupmethod in
+            backupmethod="1"
 
-1)
-nout mkdir -p "/sdcard/GBackup/Apk/"
-gclone "$Package" "/sdcard/GBackup/Apk/${ReadPackage}.apk"
-geco "$CAUTION Will be saved to Apk Folder in GBackup"
-;;
+            mkdir -p "/sdcard/GBackup/PersonalBkp"
+            cd "/data/GBackup/"
+            (   
+                echo "Creating Archive
+            Please wait....."
+                tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            ) | dialog --progressbox "Backup in progress" 7 50
 
-2)
+            ;;
 
-geco "
-$CAUTION Can be restored only using this extension"
+        3)
+            mkdir -p "/sdcard/GBackup/Original/$ReadPackage"
+            g_clone "$Package" "/sdcard/GBackup/Original/$ReadPackage/${ReadPackage}.apk"
 
-rm /data/GBackup/* -rf
+            if [[ -d "/sdcard/Android/obb/$ReadPackage" ]]; then
+                mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+                g_clone "/sdcard/Android/obb/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+            else
+                dialog --msgbox "$WARNING No Obb File found
+                        $WARNING Aborting" 6 45
+                rm "/sdcard/GBackup/Original/$ReadPackage/" -r
+                MainMenu
+            fi
 
-nout mkdir -p "/data/GBackup/"
+        ;;
 
-gclone "$Package" "/data/GBackup/${ReadPackage}.apk" -p
+        4)
+            mkdir -p "/sdcard/GBackup/Original/$ReadPackage"
+            g_clone "$Package" "/sdcard/GBackup/Original/$ReadPackage/${ReadPackage}.apk"
 
-echo "$ReadPackage" > "/data/GBackup/Info.jax"
-mkdir -p "/data/GBackup/data/"
-mkdir -p "/data/GBackup/data/$ReadPackage/"
-gclone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" -p
+            if [[ -d "/sdcard/Android/data/$ReadPackage" ]];then
+                mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/data/"
+                g_clone "/sdcard/Android/data/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/data/"
+            else
+                dialog --msgbox "$CAUTION No Data Found${RC}" 6 45
+                backupmethod="1"
+            fi
 
-backupmethod="1"
+            if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
+                mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+                g_clone "/sdcard/Android/obb/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+            fi
 
-mkdir -p "/sdcard/GBackup/PersonalBkp"
-cd "/data/GBackup/"
-tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
-
-;;
-
-3)
-mkdir -p "/sdcard/GBackup/Original/$ReadPackage"
-gclone "$Package" "/sdcard/GBackup/Original/$ReadPackage/${ReadPackage}.apk"
-
-if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
-mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
-gclone "/sdcard/Android/obb/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
-else
-    geco "$WARNING No Obb File found"
-    rm "/sdcard/GBackup/Original/$ReadPackage/" -r
-    geco "$WARNING Aborting"
-    pausebreak
-    MainMenu
-fi
-
-;;
-
-4)
-mkdir -p "/sdcard/GBackup/Original/$ReadPackage"
-gclone "$Package" "/sdcard/GBackup/Original/$ReadPackage/${ReadPackage}.apk"
-if [[ -d "/sdcard/Android/data/$ReadPackage" ]];then
-mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/data/"
-gclone "/sdcard/Android/data/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/data/"
-else
-geco "
-$CAUTION No Data Found${RC}"
-backupmethod="1"
-fi
-
-if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
-mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
-gclone "/sdcard/Android/obb/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
-fi
-
-;;
+            ;;
 
 
-5)
-geco "
-$CAUTION Can be restored only using this extension"
-geco "
-$TASK Taking a Full Backup. This may take a while
-"
-rm /data/GBackup/* -rf
+        5)
+            dialog --msgbox "$CAUTION Can be restored only using this extension
+            $TASK Taking a Full Backup. This may take a while" 6 50
 
-nout mkdir -p "/data/GBackup/"
+            rm /data/GBackup/* -rf
 
-gclone "$Package" "/data/GBackup/${ReadPackage}.apk"
+            nout mkdir -p "/data/GBackup/"
+
+            g_clone "$Package" "/data/GBackup/${ReadPackage}.apk"
 
 
-if [[ -d "/sdcard/Android/data/$ReadPackage" ]];then
-mkdir -p "/data/GBackup/Android/data/"
-gclone "/sdcard/Android/data/$ReadPackage" "/data/GBackup/Android/data/" -p
-fi
+            if [[ -d "/sdcard/Android/data/$ReadPackage" ]];then
+                mkdir -p "/data/GBackup/Android/data/"
+                g_clone "/sdcard/Android/data/$ReadPackage" "/data/GBackup/Android/data/" 
+            fi
 
-if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
-mkdir -p "/data/GBackup/Android/obb/"
-gclone "/sdcard/Android/obb/$ReadPackage" "/data/GBackup/Android/obb/" -p
-fi
+            if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
+                mkdir -p "/data/GBackup/Android/obb/"
+                g_clone "/sdcard/Android/obb/$ReadPackage" "/data/GBackup/Android/obb/" 
+            fi
 
-echo "$ReadPackage" > "/data/GBackup/Info.jax"
-mkdir -p "/data/GBackup/data/"
-mkdir -p "/data/GBackup/data/$ReadPackage/"
-gclone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" -p
+            echo "$ReadPackage" > "/data/GBackup/Info.jax"
+            mkdir -p "/data/GBackup/data/"
+            mkdir -p "/data/GBackup/data/$ReadPackage/"
+            g_clone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" 
 
-backupmethod="1"
+            backupmethod="1"
 
-mkdir -p "/sdcard/GBackup/PersonalBkp"
-cd "/data/GBackup/"
-tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            mkdir -p "/sdcard/GBackup/PersonalBkp"
+            cd "/data/GBackup/"
+                        (   
+                echo "Creating Arhive
+            Please wait....."
+                tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            ) | dialog --progressbox "Backup in progress" 7 50
 
-;;
+        ;;
 
-6)
-geco "$WARNING Cancelled
-"
-pausebreak
-MainMenu
-;;
+        6)
+            dialog --msgbox "$WARNING Cancelled" 5 40
+            MainMenu
+            ;;
 
-*)
-geco "$CAUTION Using 2nd Option"
-geco "
-$CAUTION Can be restored only using this extension"
+        *)
+            dialog --msgbox "$CAUTION Using 2nd Option
+            $CAUTION Can be restored only using this extension" 7 45
 
-rm /data/GBackup/* -rf
+            rm /data/GBackup/* -rf
 
-nout mkdir -p "/data/GBackup/"
+            nout mkdir -p "/data/GBackup/"
 
-gclone "$Package" "/data/GBackup/${ReadPackage}.apk" -p
+            g_clone "$Package" "/data/GBackup/${ReadPackage}.apk" 
 
-echo "$ReadPackage" > "/data/GBackup/Info.jax"
-mkdir -p "/data/GBackup/data/"
-mkdir -p "/data/GBackup/data/$ReadPackage/"
-gclone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" -p
+            echo "$ReadPackage" > "/data/GBackup/Info.jax"
+            mkdir -p "/data/GBackup/data/"
+            mkdir -p "/data/GBackup/data/$ReadPackage/"
+            g_clone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" 
 
-backupmethod="1"
+            backupmethod="1"
 
-mkdir -p "/sdcard/GBackup/PersonalBkp"
-cd "/data/GBackup/"
-tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
-;;
+            mkdir -p "/sdcard/GBackup/PersonalBkp"
+            cd "/data/GBackup/"
+                        (   
+                echo "Creating Archive
+            Please wait....."
+                tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            ) | dialog --progressbox "Backup in progress" 7 50
+            ;;
 
-esac
+        esac
 
-if [[ $backupmethod != "1" ]];then
-geco "
-Do you want to Make this as an xapk file? or compress to take an personal backup
+        if [[ $backupmethod != "1" ]];then
 
-$CAUTION Note : XAPK Files Can be installed using XAPK Installer or you can Share with your friends or upload online.
 
-1) Personal Backup ( ${GREEN}Recommended${RC} )
-2) XAPK File - ( for Sharing )
-3) Only Files ( Can be found in Main Storage )
-"
-read -p "Your Option >> " backupcompress
+    HEIGHT=20
+	WIDTH=60
+	CHOICE_HEIGHT=20
+	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+	TITLE="++++ Backup and restore ++++"
+	MENU="Do you want to Make this as an xapk file? or compress to take an personal backup
+        $CAUTION Note : XAPK Files Can be installed using XAPK Installer or you can Share with your friends or upload online."
 
-case $backupcompress in
+	OPTIONS=( 1 "Personal Backup ( Recommended )"
+        2 "XAPK File ( for Sharing )"
+        3 "Only Files ( Can be found in Main Storage )"
+    )
+	backupcompress=$(dialog --clear --cancel-label "Exit" \
+	                --backtitle "$BACKTITLE" \
+	                --title "$TITLE" \
+	                --menu "$MENU" \
+	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
+	                "${OPTIONS[@]}" \
+	                2>&1 >/dev/tty)
+    
 
-1)
-mkdir -p /sdcard/GBackup/PersonalBkp
-cd "/sdcard/GBackup/Original/$ReadPackage"
-geco "$TASK Please Wait Creating Zip Archive in GBackup/PersonalBkp"
-7z a "/sdcard/GBackup/PersonalBkp/$ReadPackage.zip" "*" 
-geco ""
-;;
+        case $backupcompress in
 
-2)
-mkdir -p /sdcard/GBackup/XAPK
-cd "/sdcard/GBackup/Original/$ReadPackage"
-geco "$TASK Please Wait Creating XAPK File for Sharing in GBackup/XAPK"
-7z a "/sdcard/GBackup/XAPK/${ReadPackage}_GBackup.xapk" "*"
-;;
+            1)
+                mkdir -p /sdcard/GBackup/PersonalBkp
+                cd "/sdcard/GBackup/Original/$ReadPackage"
+                dialog --msgbox "$TASK Creating Zip Archive in GBackup/PersonalBkp" 7 45
+                7z a "/sdcard/GBackup/PersonalBkp/$ReadPackage.zip" "*"
+                ;;
 
-3)
-geco "
-$CAUTION Your Files are not compressed. You can copy it or install it manually after sometime"
-geco "$CAUTION Your Files can be found in your Main Storage by GBackup/Original/$ReadPackage/"
-;;
+            2)
+                mkdir -p /sdcard/GBackup/XAPK
+                cd "/sdcard/GBackup/Original/$ReadPackage"
+                dialog --msgbox "$TASK Please Wait Creating XAPK File for Sharing in GBackup/XAPK" 7 45
+                7z a "/sdcard/GBackup/XAPK/${ReadPackage}_GBackup.xapk" "*"
+            ;;
 
-*)
-geco "
-$CAUTION Your Files are not compressed. You can copy it or install it manually after sometime"
-geco "$CAUTION Your Files can be found in your Main Storage by GBackup/Original/$ReadPackage/"
-;;
+            3)
+                dialog --msgbox "$CAUTION Your Files are not compressed. You can copy it or install it manually after sometime
+                $CAUTION Your Files can be found in your Main Storage by GBackup/Original/$ReadPackage/" 8 50
 
-esac
+            ;;
 
-fi
-geco "
-$SUCCESS Completed Backing up $ReadPackage"
-pausebreak
-MainMenu
+            *)
+                dialog --msgbox "$CAUTION Your Files are not compressed. You can copy it or install it manually after sometime
+                $CAUTION Your Files can be found in your Main Storage by GBackup/Original/$ReadPackage/" 8 50
+            ;;
+
+            esac
+
+        fi
+        dialog --msgbox "$SUCCESS Completed Backing up $ReadPackage" 6 45
+        MainMenu
+    else
+            MainMenu
+    fi
 
 }
 
 function AppRestore() {
 
-    geco "Please Put your files in ${YELLOW}GBackup/PersonalBkp${RC} of Main Storage"
+if [[ -d /sdcard/GBackup/PersonalBkp ]]; then
 
-    if [[ -d /sdcard/GBackup/PersonalBkp ]];then
-cd /sdcard/GBackup/PersonalBkp/
-geco " "
+    cd /sdcard/GBackup/PersonalBkp/
 
-geco " ++++ Backups ++++ 
-"
+    if [ ! "$(ls -A /sdcard/GBackup/PersonalBkp/)" ]
+        then
+            dialog --msgbox "$WARNING Empty Directory" 6 45
+            MainMenu
+    fi
 
-if [ ! "$(ls -A /sdcard/GBackup/PersonalBkp/)" ]
-then
-    geco "$WARNING Empty Directory"
-    pausebreak
-    MainMenu
-fi
+    shopt -s nullglob
+    zip=(/sdcard/GBackup/PersonalBkp/*.zip)
+    tar=(/sdcard/GBackup/PersonalBkp/*.tar.gz)
 
-shopt -s nullglob
-zip=(/sdcard/GBackup/PersonalBkp/*.zip)
-tar=(/sdcard/GBackup/PersonalBkp/*.tar.gz)
-
-if ((${#zip[@]} && ${#tar[@]}));then
-	files=( *.tar.gz *.zip )
-elif ((${#zip[@]}));then
-	files=( *.zip )
-elif ((${#tar[@]}));then
-	files=( *.tar.gz )
-fi
-
-shopt -s extglob
-string="@(${files[0]}"
-for((i=1;i<${#files[@]};i++))
-do
-    string+="|${files[$i]}"
-done
-string+=")"
-select file in "${files[@]}" "Cancel"
-do
-    case $file in
-    $string)
-    
-        if [[ "$file" == *".zip"* ]]; then
-        ext=".zip"
-        else
-        ext=".tar.gz"
-        fi
-        filex=${file//$ext/}
-        nout rm /data/GRestore/ -rf
-        mkdir -p "/data/GRestore/"
-        if [[ "$file" == *".zip"* ]]; then
-        unzip "${file}" -d "/data/GRestore/"
-        else
-        tar -xpf "$file" -C "/data/GRestore"
-
-	fi
-geco "$TASK Restoring Backup.. Please Wait"
-geco "$CAUTION Do not switch to GUI while restoring"
-cd "/data/GRestore/"
+    if ((${#zip[@]} && ${#tar[@]}))
         
+        then
+            files=( *.tar.gz *.zip )
+        elif ((${#zip[@]}));then
+            files=( *.zip )
+        elif ((${#tar[@]}));then
+            files=( *.tar.gz )
+    fi
 
-PkgnameR=$(cat Info.jax)
+    shopt -s extglob
+    string="@(${files[0]}"
 
-if [[ -d /data/data/$PkgnameR ]];then
-	geco "$CAUTION App already installed
-Please uninstall and Restore this backup"
-pausebreak
-MainMenu
-fi
-
-nout pm install *.apk
-
-        if [[ -d "data" ]];then
-
-
-geco "$TASK Copying files"
-
-
-cd data
-gclone * /data/data/ -r
-cd ..
-
-
-# Snippet by AXON
-ug="$(grep "$PkgnameR" /data/system/packages.list | awk '{print $2}')"
-chown -hR ${ug}:${ug} /data/data/$PkgnameR
-
-
-geco "
-$SUCCESS Your Previous Data was Restored.
-E.g Score, Level, Account, Progress etc.,. are now restored "
-DATAa="True"
-else
-geco "
-$CAUTION No Data found. This is created using 3rd Option.
-E.g Score, Level, Account, Progress etc.,."
-DATAa="False"
-fi
-
-
-        if [ -d "Android" ]
-then
-geco "$TASK Copying App/Game Files"
-gclone "Android" "/sdcard/"
-geco "
-$SUCCESS Copied App/Game Files"
-fi
-
-geco "$SUCCESS Restored $PkgnameR Successfully"
-
-
-pausebreak
-MainMenu
-
-      break;
-;;
+    for((i=1;i<${#files[@]};i++))
     
+    do
+        string+="|${files[$i]}"
+    done
 
-    "Cancel")
-        
-MainMenu
+    string+=")"
+    
+    HEIGHT=30
+	WIDTH=60
+	CHOICE_HEIGHT=28
+	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+	TITLE="++++ Backups ++++"
+	MENU="Please Put your files in GBackup/PersonalBkp of Main Storage"
+	
+    let i=0 # define counting variable
+	OPTIONS=() # define working array
+	while read -r line; do # process file by file
+    let i=$i+1
+    OPTIONS+=($i "$line")
+	done < <( echo "${files[@]}" )
+	file=$(dialog --clear --cancel-label "Exit" \
+	                --backtitle "$BACKTITLE" \
+	                --title "$TITLE" \
+	                --menu "$MENU" \
+	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
+	                "${OPTIONS[@]}" \
+	                2>&1 >/dev/tty)
+    
+    
+    if [ $? -eq 0 ]; then 
+        case $file in
+                $string)
+                
+                    if [[ "$file" == *".zip"* ]]; then
+                    ext=".zip"
+                    else
+                    ext=".tar.gz"
+                    fi
+                    filex=${file//$ext/}
+                    nout rm /data/GRestore/ -rf
+                    mkdir -p "/data/GRestore/"
+                    if [[ "$file" == *".zip"* ]]; then
+                    unzip "${file}" -d "/data/GRestore/"
+                    else
+                    
+                                (   
+                echo "Extracting Archive
+            Please wait....."
+                tar -xpf "$file" -C "/data/GRestore"
+            ) | dialog --progressbox "Backup in progress" 7 45
 
-;;
+                fi
+            dialog --msgbox "$TASK Restoring Backup.. Please Wait" 7 45
+            cd "/data/GRestore/"
+                    
 
-    *)
-        file=""
-        geco "$CAUTION Please choose a number from 1 to $((${#files[@]}+1))" ;;
-    esac
-done
+            PkgnameR=$(cat Info.jax)
+
+            if [[ -d /data/data/$PkgnameR ]];then
+                dialog --msgbox "$CAUTION App already installed
+            Please uninstall and Restore this backup" 7 45
+            MainMenu
+            fi
+
+            nout pm install *.apk
+
+                    if [[ -d "data" ]];then
+
+
+
+            cd data
+            g_clone * /data/data/ -r
+            cd ..
+
+
+            # Snippet by AXON
+            ug="$(grep "$PkgnameR" /data/system/packages.list | awk '{print $2}')"
+            chown -hR ${ug}:${ug} /data/data/$PkgnameR
+
+
+            dialog --msgbox "$SUCCESS Your Previous Data was Restored.
+            E.g Score, Level, Account, Progress etc.,. are now restored" 6 65
+            DATAa="True"
+            else
+            dialog --msgbox "$CAUTION No Data found. This is created using 3rd Option.
+            E.g Score, Level, Account, Progress etc.,." 6 65
+            DATAa="False"
+            fi
+
+
+            if [ -d "Android" ]
+            then
+                dialog --msgbox "$TASK Copying App/Game Files" 5 40
+                g_clone "Android" "/sdcard/"
+                dialog --msgbox "$SUCCESS Copied App/Game Files" 5 40
+            fi
+
+            dialog --msgbox "$SUCCESS Restored $PkgnameR Successfully" 6 45
+
+
+            MainMenu
+
+                break;
+            ;;
+                
+            *)
+                 AppRestore
+        esac
+    else
+        MainMenu
+    fi
+    
 
     else
-    geco "$CAUTION Directory Not Found
-    "
-    pausebreak
-    MainMenu
+        dialog --msgbox "$CAUTION Directory Not Found" 5 40
+        MainMenu
 
 fi
 
 }
 
 function pausebreak(){
-    geco "
-$CAUTION Press any [${GREEN}key${RC}] to continue"
+        geco "$CAUTION Press any [${GREEN}key${RC}] to continue"
     read -n 1 pausebreakvar
 }
 
@@ -452,7 +480,7 @@ geco "
                                      ${YELLOW}Advanced Backup & Restore :-${RC}
                                      You can create .xapk .zip or take a personal backup when creating a Backup.
                                      You can also choose what to backup (e.g. Apk only, Apk+data or Apk+data+obb ).
-                                     Uses unzip to extract archive and gclone to copy.
+                                     Uses unzip to extract archive and g_clone to copy.
 
                                      ${YELLOW}Compression & Creation :-${RC}
                                      Uses ${GREEN}7z${RC} to Highly compress Archive at lesser time. More faster
@@ -477,59 +505,57 @@ MainMenu
 }
 
 function MainMenu() {
-clear
+
 nout rm /data/GBackup/* -r
 nout rm /data/GRestore/* -r
 
-geco '
-                                      ____             __                  ___        ____            __                
-                                     / __ )____ ______/ /____  ______     ( _ )      / __ \___  _____/ /_____  ________ 
-                                    / __  / __  / ___/ //_/ / / / __ \   / __ \/|   / /_/ / _ \/ ___/ __/ __ \/ ___/ _ \
-                                   / /_/ / /_/ / /__/ ,< / /_/ / /_/ /  / /_/  <   / _, _/  __(__  ) /_/ /_/ / /  /  __/
-                                  /_____/\__,_/\___/_/|_|\__,_/ .___/   \____/\/  /_/ |_|\___/____/\__/\____/_/   \___/
-                                                             /_/'                                                        
-geco "
-                                                                        By ${YELLOW}Jaxparrow${RC}                                                      
 
-                                                                   [1] Backup App
-                                                                   [2] Restore App
-                                                                   [h] Help
-                                                                   [a] About
-                                                                   [x] Exit" 
-geco ""
-read -n 1 -p "Enter Option >> " mainmenu
-geco "
-"
+	HEIGHT=13
+	WIDTH=45
+	CHOICE_HEIGHT=23
+	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+	TITLE="Backup and Restore"
+	MENU="Choose an option"
+	
+	OPTIONS=(
+1 "Backup app"
+2 "Restore app"
+3 "Help"
+4 "About"
+)
+	mainmenu=$(dialog --clear --cancel-label "Exit" \
+	                --backtitle "$BACKTITLE" \
+	                --title "$TITLE" \
+	                --menu "$MENU" \
+	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
+	                "${OPTIONS[@]}" \
+	                2>&1 >/dev/tty)
 
-case $mainmenu in
-1)
-AppBackup
-;;
+if [ $? -eq 0 ]; then # Exit with OK
+    case $mainmenu in
+        1)
+        AppBackup
+        ;;
 
-2)
-AppRestore
-;;
+        2)
+        AppRestore
+        ;;
 
-"h")
-HelpMenu
-;;
+        3)
+        HelpMenu
+        ;;
 
 
-"a")
-AboutMenu
-;;
+        4)
+        AboutMenu
+        ;;
 
-"x")
-exit
-;;
+        *)exit;;
 
-*)
-geco "$WARNING Invalid Option${RC}"
-pausebreak
-MainMenu
-;;
-
-esac
+    esac
+else
+    exit
+fi
 
 }
 

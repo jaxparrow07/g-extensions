@@ -6,9 +6,9 @@ NAME="App Backup & Restore" #Package/Extension Name
 
 TYPE="Extension" #Specify (Package / Extension)
 
-AUTHOR="Jaxparrow" #Your name as the Developer/Owner/Packer
+AUTHOR="Jaxparrow,Xtr" #Your name as the Developer/Owner/Packer
 
-VERSION="1.7" #Specify the Version of this package/extension
+VERSION="2.3" #Specify the Version of this package/extension
 
 SHORTDESC="Easily Backup/Restore Apps and Games" #Provide a short description about this package/extension
 
