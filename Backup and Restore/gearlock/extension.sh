@@ -217,7 +217,7 @@ if [ $? -eq 0 ]; then # Exit with OK
 	WIDTH=60
 	CHOICE_HEIGHT=20
 	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
-	TITLE="++++ Backup and restore ++++"
+	TITLE=" Backup and restore "
 	MENU="Do you want to Make this as an xapk file? or compress to take an personal backup
         $CAUTION Note : XAPK Files Can be installed using XAPK Installer or you can Share with your friends or upload online."
 
@@ -240,14 +240,14 @@ if [ $? -eq 0 ]; then # Exit with OK
                 mkdir -p /sdcard/GBackup/PersonalBkp
                 cd "/sdcard/GBackup/Original/$ReadPackage"
                 dialog --msgbox "$TASK Creating Zip Archive in GBackup/PersonalBkp" 7 45
-                7z a "/sdcard/GBackup/PersonalBkp/$ReadPackage.zip" "*"
+                7z a "/sdcard/GBackup/PersonalBkp/$ReadPackage.zip" * # | Dialog Progress
                 ;;
 
             2)
                 mkdir -p /sdcard/GBackup/XAPK
                 cd "/sdcard/GBackup/Original/$ReadPackage"
                 dialog --msgbox "$TASK Please Wait Creating XAPK File for Sharing in GBackup/XAPK" 7 45
-                7z a "/sdcard/GBackup/XAPK/${ReadPackage}_GBackup.xapk" "*"
+                7z a "/sdcard/GBackup/XAPK/${ReadPackage}_GBackup.xapk" * # | Dialog Progress
             ;;
 
             3)
@@ -284,78 +284,75 @@ if [[ -d /sdcard/GBackup/PersonalBkp ]]; then
             MainMenu
     fi
 
-    shopt -s nullglob
-    zip=(/sdcard/GBackup/PersonalBkp/*.zip)
-    tar=(/sdcard/GBackup/PersonalBkp/*.tar.gz)
+   
+    ## SNIPPET FROM GEARLOCK ##
+    ## https://github.com/axonasif/gearlock ##
+    ## Thanks to AXON for this snippet ##
 
-    if ((${#zip[@]} && ${#tar[@]}))
-        
-        then
-            files=( *.tar.gz *.zip )
-        elif ((${#zip[@]}));then
-            files=( *.zip )
-        elif ((${#tar[@]}));then
-            files=( *.tar.gz )
-    fi
 
-    shopt -s extglob
-    string="@(${files[0]}"
-
-    for((i=1;i<${#files[@]};i++))
-    
-    do
-        string+="|${files[$i]}"
-    done
-
-    string+=")"
-    
-    HEIGHT=30
-	WIDTH=60
-	CHOICE_HEIGHT=28
-	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
-	TITLE="++++ Backups ++++"
-	MENU="Please Put your files in GBackup/PersonalBkp of Main Storage"
-	
-    let i=0 # define counting variable
-	OPTIONS=() # define working array
-	while read -r line; do # process file by file
-    let i=$i+1
-    OPTIONS+=($i "$line")
-	done < <( echo "${files[@]}" )
-	file=$(dialog --clear --cancel-label "Exit" \
-	                --backtitle "$BACKTITLE" \
-	                --title "$TITLE" \
-	                --menu "$MENU" \
-	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
-	                "${OPTIONS[@]}" \
-	                2>&1 >/dev/tty)
+    while true; do
+	[ -z "$PWD" ] && PWD="$OLDPWD"
+	i=1 W=(); while read -r line; do W+=($((i++)) "$line"); done < <(  ls -p "$PWD" | grep -v / ); CUR_DIR="$PWD"
+	FILE_NUM="$(dialog --colors --clear --backtitle "$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")" --title " Restore a Backup " --ok-label "Restore" --cancel-label "Cancel" --menu  "\nRestore Backup: \Zb\Z1$CUR_DIR\Zn \n \n" 27 100 40 "${W[@]}" 3>&2 2>&1 1>&3)"; RETC=$?
+	if [ "$RETC" = "0" ]; then # Open button
+		TER="$( ls -p "$PWD" | grep -v / | sed -n "$FILE_NUM p")"
+		if [ -f "$TER" ]; then
+			if [ -n "$(echo "$TER" | grep -E '.tar.gz')" ]; then
+	            dialog --msgbox "$TASK This will Restore your Progress" 6 45
+				file="$TER"
+				break
+			elif [ -n "$(echo "$TER" | grep -E '.zip')" ]; then
+	            dialog --msgbox "$WARNING This will not Restore your Progress" 6 45
+				file="$TER"
+				break
+			else
+	            dialog --msgbox "$WARNING Not a valid Backup" 6 45
+	            MainMenu
+				break
+			fi
+		fi
+	else # Back button
+		MainMenu
+		break
+	fi
+done
     
     
-    if [ $? -eq 0 ]; then 
-        case $file in
-                $string)
                 
-                    if [[ "$file" == *".zip"* ]]; then
-                    ext=".zip"
-                    else
-                    ext=".tar.gz"
-                    fi
-                    filex=${file//$ext/}
-                    nout rm /data/GRestore/ -rf
-                    mkdir -p "/data/GRestore/"
-                    if [[ "$file" == *".zip"* ]]; then
-                    unzip "${file}" -d "/data/GRestore/"
-                    else
-                    
-                                (   
-                echo "Extracting Archive
-            Please wait....."
-                tar -xpf "$file" -C "/data/GRestore"
-            ) | dialog --progressbox "Backup in progress" 7 45
+if [[ "$file" == *".zip"* ]]; then
 
-                fi
-            dialog --msgbox "$TASK Restoring Backup.. Please Wait" 7 45
-            cd "/data/GRestore/"
+ext=".zip"
+
+else
+
+ext=".tar.gz"
+fi
+
+filex=${file//$ext/}
+
+nout rm /data/GRestore/ -rf
+
+
+mkdir -p "/data/GRestore/"
+
+
+if [[ "$file" == *".zip"* ]]; then
+
+
+unzip "${file}" -d "/data/GRestore/" # | Dialog Progress
+
+
+else
+                    (   
+    echo "Extracting Archive
+Please wait....."
+    tar -xpf "$file" -C "/data/GRestore"
+) | dialog --progressbox "Backup in progress" 7 45
+fi
+
+
+dialog --msgbox "$TASK Restoring Backup.. Please Wait" 7 45
+cd "/data/GRestore/"
                     
 
             PkgnameR=$(cat Info.jax)
@@ -369,7 +366,6 @@ if [[ -d /sdcard/GBackup/PersonalBkp ]]; then
             nout pm install *.apk
 
                     if [[ -d "data" ]];then
-
 
 
             cd data
@@ -400,26 +396,8 @@ if [[ -d /sdcard/GBackup/PersonalBkp ]]; then
             fi
 
             dialog --msgbox "$SUCCESS Restored $PkgnameR Successfully" 6 45
-
-
             MainMenu
-
-                break;
-            ;;
-                
-            *)
-                 AppRestore
-        esac
-    else
-        MainMenu
-    fi
-    
-
-    else
-        dialog --msgbox "$CAUTION Directory Not Found" 5 40
-        MainMenu
-
-fi
+        fi
 
 }
 
