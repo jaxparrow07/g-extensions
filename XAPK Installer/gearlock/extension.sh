@@ -1,636 +1,540 @@
 #!/gearlock/bin/bash
 
+# Defining indicators
 
-# Change this according to Extension version
-EXT_VERSION="3.5"
+WARNING="[!]"
+SUCCESS="[+]"
+CAUTION="[-]"
+TASK="[*]"
 
-opentime=`date +"%r"`
-date=`date +'%m/%d/%Y'`
-
-        if [ -d "/data/XAPK/Temp" ] 
-
-then
-cd /data/XAPK/Temp/
-rm * -r
-
-else
-geco "
-"
-fi
-
-
-
-# Legacy Mode for Installing even Invalid XAPKs in a possible way. Installation Snipper from v1.6
-function Legacymode() {
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|   
-                                                "
-gecpc "Legacy Mode ( for unsupported XAPK )" "+"
-
-geco ""
-geco "[!] Installing from file : ${filex}"
-
-geco "
-[-] Installing Apk :\c"
-pm install *.apk
-
-        if [ -d "/sdcard/Android/obb" ] 
-then
-nout geco "0"
-
-else
-
-opentime=`date +"%r"`
-echo "Created obb folder on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
-
-mkdir /sdcard/Android/obb
-
-fi
-
-
-geco "${YELLOW}[-] Copying Game Files${RC}"
-gclone Android /sdcard/
-geco "${GREEN}[+] Copied Game Files${RC}"
-
-geco ""
-geco "${GREEN}[+] Installed ${filex} Successfully!${RC}"
-rm "/data/XAPK/Temp/${filex}" -r
-geco "
-[-] Press any Key to Continue"
-read -n 1 wasteoftime
-MainMenu
-
+function g_clone() {
+(rsync -ah --info=progress2 "$@" -p) 2>&1 | \
+dialog --progressbox "..................... Progress  ======  Speed.............." 7 80
 }
 
-function HTU()
-{
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|   
-                                                 "
-
-gecpc "Help - How to Use" "+"
-geco " 
-                                                 Place your XAPK files in Gearload, Download for easy access through this.
-                                                 You can easily chose Custom folder to search for extension in the Location
-                                                 Selector ( developed by me ). After Choosing the location. You can select
-                                                 a XAPK file from the chosen folder. You can see the App's version, Required
-                                                 Permissions and choose to install or not ( Similar to APK installation GUI).
-                                                 If the extension is a split XAPK. You can choose to install which config
-                                                 to be installed ( e.g config.en for English pack - Must be included with 
-                                                 the app ) or skip config installation.
-
-                                                 by SupremeGamers ( https://supreme-gamers.com )
-                                                 "
-geco "${YELLOW}[!] Press any key to goto Main Menu${RC}"
-
-read HTU
-
-MainMenu
-
-}
-
-function About()
-{
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|   
-                                                 "
-
-gecpc "About This Extension" "+"
-geco " 
-                                                 Thanks for using XAPK Installer. I hope you will like this update of this
-                                                 extension. Easy Install XAPK file like never before (cli). More Simplified
-                                                 in Newer versions. Contact me if you have any doubts/bugs/suggestions.
-
-                                                 Created by your Jaxparrow. Took more than 5 hours to make this simple
-                                                 extension ( On your view of using ). This can be used for a 10 seconds work.
-                                                 But, It is needed to be coded for hours to fix bugs & implement new features.
-                                                 
-                                                 Show your Support by Rating with Stars.
-
-                                                 by SupremeGamers ( https://supreme-gamers.com )"
-
-geco "
-${YELLOW}[!] Press any key to goto Main Menu${RC}"
-
-read aboutin
-
-MainMenu
-}
-
-function Install()
-{
-
-# XAPK Installer's own Location Selector
-
-rm /data/XAPK/ -r
-
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|   "
-
-gecpc "Location Selection" "+"
-
-geco "
-                                                                      Where to look for XAPK files
-
-                                                                       [1] Gearload ( Default )
-                                                                       [2] Downloads ( Most Common )
-                                                                       [3] Custom Folder ( Folder Selector )
-                                                                       [4] Go Back
-"
-
-read -p "Option >> " locationsel
-
-case $locationsel in
-
-1)
-cd ${GRLOAD}
-;;
-
-2)
-cd /sdcard/Download/
-;;
-3)
-cd /sdcard/
-FileSelector() {
-clear
-gecpc "$(pwd)" "="
-ls -l
-gecpc "$(pwd)" "="
-geco "
-Type and press enter to Use this options
-[${YELLOW}+${RC}] - to Select Current folder
-[${YELLOW}-${RC}] - to Go Back one folder
-[${YELLOW}foldername${RC}] - to Enter a folder"
-geco ""
-read -p "Option/Folder > " foldervar
-case $foldervar in
-
-"+")
-FOLDER=$(pwd)
-;;
-
-"-")
-cd ..
-FileSelector
-;;
-
-*)
-
-if [[ -d "$foldervar" ]];then
-cd $foldervar
-FileSelector
-else
-FileSelector
-fi
-
-;;
-
-esac
-}
-
-FileSelector
-
-;;
-
-
-4)
-MainMenu
-;;
-
-*)
-
-geco "[-] Invalid Option"
-sleep 1
-Install
-
-esac
-
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|   "
-gecpc "$EXT_VERSION" "+"
-
-# File Selector..
-
-count=`ls -1 *.xapk 2>/dev/null | wc -l`
-if [ $count != 0 ]
-then 
-geco "${GREEN}[i] ${count} xapk files found${RC}"
-geco "
-"
-else
-geco "${RED}[-] No xapk files found in Current Folder${RC}"
-geco "[!] Place your xapk files in this folder and try again"
-geco "
-"
-geco "${YELLOW}[-] Press any key to goto Main Menu${RC}"
-read mainmenuentryfail
-MainMenu
-fi
-
-files=( *.xapk )
-shopt -s extglob
-string="@(${files[0]}"
-for((i=1;i<${#files[@]};i++))
-do
-    string+="|${files[$i]}"
-done
-string+=")"
-select file in "${files[@]}" "Cancel"
-do
-    case $file in
-    $string)
-        ext=.xapk
-        filex=${file//$ext/}
-        geco "Opening ${filex} file"
-
-        if [ -d "/data/XAPK/Temp/" ] 
-then
-
-geco "
-"
-else
-
-mkdir -p /data/XAPK/Temp
-
-fi
-
-mkdir "/data/XAPK/Temp/${filex}/"
-geco "[-] Extracting File $filex"
-unzip "${file}" -d "/data/XAPK/Temp/${filex}"
-
-geco "
-"
-cd "/data/XAPK/Temp/${filex}"
-
-# Parsing Value from JSON
-
-if [[ -f manifest.json ]];then
-insmod=0
-Appname=$(cat manifest.json | jq -r '.name')
-Packagename=$(cat manifest.json | jq -r '.package_name' )
-Permissions=$(cat manifest.json | jq -r '.permissions' )
-Version_name=$(cat manifest.json | jq -r '.version_name' )
-Min_sdk=$(cat manifest.json | jq -r '.min_sdk_version' )
-
-else
-
-if [[ -d "Android" ]];then
-	insmod=1
-else
-	insmod=2
-fi
-
-fi
-
-if [[ $insmod == 2 ]];then
-
-geco "Unsupported File. Please Download it again."
-geco "
-[-] Press any Key to Continue"
-read -n 1 wasteoftime
-MainMenu
-
-elif [[ $insmod == 1 ]];then
-geco "
-[-] This XAPK is not a properly packed XAPK. But, Can be installed in ${GREEN}Legacy Mode${RC}.
-
-[!] Press any [Key] to Continue"
-read -n 1 wasteoftime
-
-Legacymode
-fi
-
-# Continue to Install in Normal mode if the value is 0
-
-# New UI
-
-clear
-gecpc "XAPK Installer" "="
-figlet -f small "$Appname"
-geco "Version : $Version_name"
-gecpc "Info" "="
-
-
-## SDK  Checking - Depriciated due to bugs within the SDK Checking
-
-# if [[ -z $SDK ]];then
-#
-# geco ""
-# figlet -f small "Failed!"
-# geco "Failed to get SDK Version. Please Try Again after sometime or reboot your device."
-
-# geco "[-] Press any Key to Continue"
-
-# read -n 1 wasteoftime
-# MainMenu
-
-# else
-
-# sdkversion="$SDK"
-
-# fi
-
-# if [[ $sdkversion -lt $Min_sdk ]];then
-# geco ""
-# figlet -f small "Unsupported!"
-# geco "This Application requres atleast $Min_sdk SDK version. Current : $sdkversion"
-
-# geco "[-] Press any Key to Continue"
-
-# read -n 1 wasteoftime
-# MainMenu
-# fi
-
-geco "Required Permissions
-$Permissions
-"
-gecpc "Prompt" "="
-
-if [[ -d /data/data/$Packagename ]];then
-	update=true
-else
-	update=false
-fi
-
-if [[ $update == false ]];then
-geco "
-[!] Do you want to install $Appname [Y/n]: \c"
-	read userpromt
-else
-	geco "
-[!] Do you want to update $Appname to $Version_name [Y/n]: \c"
-	read userpromt
-fi
-
-case $userpromt in
-
-y)
-geco "[+] Installing"
-;;
-Y)
-geco "[+] Installing"
-;;
-
-*)
-geco "
-[-] Aborted by User ($(whoami))
-"
-geco "[!] Press any key to continue"
-read -n 1 something
-MainMenu
-;;
-
-esac
-
-# Continue Installing without errors.
-
-splitcount=$(ls -1 config.*.apk 2>/dev/null | wc -l)
-
-if [[ $splitcount -ne 0 ]];then
-gecpc "Extra Configs" "="
-
-options=( config.*.apk )
-
-menu() {
-	clear
-	gecpc "Extra Configs" "="
-	figlet -f small "Config Selection"
-    echo "Avaliable configs:"
-    for i in ${!options[@]}; do 
-        printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${options[i]}"
-    done
-    if [[ "$msg" ]]; then echo "$msg"; fi
-}
-
-prompt="
-Check an config (again to uncheck, ENTER when done): "
-while menu && read -rp "$prompt" num && [[ "$num" ]]; do
-    [[ "$num" != *[![:digit:]]* ]] &&
-    (( num > 0 && num <= ${#options[@]} )) ||
-    { msg="Invalid option: $num"; continue; }
-    ((num--)); msg="${options[num]} was ${choices[num]:+un}checked"
-    [[ "${choices[num]}" ]] && choices[num]="" || choices[num]="+"
-done
-
-var=$(printf ""; msg=" nothing"
-for i in ${!options[@]}; do 
-    [[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; }
-done)
-
-if [[ ! -z $var ]]; then
-	var=$(echo "$var" | sed 's/^.//')
-	arr=( $var )
-	geco "[+] Installing Base Apk with ${arr[@]} : \c"
-	pm install -r "${Packagename}.apk" ${arr[@]}
-
-else
-	
-	geco "[-] Skipping Configs"
-    geco "[+] Installing Base Apk : \c"
-    pm install -r "${Packagename}.apk"
-fi
-
-else
-
-geco  "
-[+] Installing Apk : \c"
-pm install -r "${Packagename}.apk"
-
-
-fi
-
-
-        if [ -d "/sdcard/Android/obb" ]
-then
-geco ""
-else
-opentime=`date +"%r"`
-echo "Created obb folder on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
-
-mkdir /sdcard/Android/obb
-
-fi
-
-if [ -d "Android" ]
-then
-	if [[ $update == false ]];then
-
-		geco "${YELLOW}[-] Copying Game Files${RC}"
-		gclone Android /sdcard/
-		geco "${GREEN}[+] Copied Game Files${RC}"
-
-	else
-		geco "${YELLOW}[-] Removing Current OBB${RC}"
-		rm "/sdcard/Android/obb/$Packagename" -r
-		geco "${YELLOW}[-] Copying Game Files${RC}"
-		gclone Android /sdcard/
-		geco "${GREEN}[+] Copied Game Files${RC}"
-	fi
-else
-	geco "${YELLOW}[!] No Obb File Found${RC}"
-fi
-
-if [[ $update == false ]];then
-    geco "${GREEN}
-[+] Installed ${Appname} Successfully ${RC}"
-else
-	geco "${GREEN}
-[+] Updated ${Appname} Successfully ${RC}"
-fi
-        rm "/data/XAPK/Temp/${filex}" -r
-
-opentime=`date +"%r"`
-if [[ $update == false ]];then
-	echo "Installed ${Appname} Successfully on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
-else
-	echo "Updated ${Appname} Successfully to $Version_name on ${opentime} ${date}" >> /sdcard/XAPK-log.txt
-fi
-geco "${YELLOW}
-[!] Press any Key to go to Main Menu${RC}"
-read coninput
-MainMenu
-      break;
-;;
+
+function AppBackup() {
+
+HEIGHT=25
+    WIDTH=60
+    CHOICE_HEIGHT=20
+    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    TITLE="++++ List of Available Packages ++++"
+    MENU="Select Any Package"
+    
+    let i=0 # define counting variable
+    OPTIONS=() # define working array
+    while read -r line; do # process file by file
+    let i=$i+1
+    OPTIONS+=($i "$line")
+    done < <( pm list packages -3 | sed -e 's/package://g' )
+    ReadPackagename=$(dialog --clear --cancel-label "Exit" \
+                    --backtitle "$BACKTITLE" \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
+if [ $? -eq 0 ]; then # Exit with OK
+    ReadPackage=$(pm list packages -3 | sed -e 's/package://g' | sed "${ReadPackagename}!d")
+    Prefix="package:"
+    Packagepathget=$(pm path "$ReadPackage")
+    Package="${Packagepathget//$Prefix/}"
+
+            
+            HEIGHT=20
+            WIDTH=60
+            CHOICE_HEIGHT=20
+            BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+            TITLE="$CAUTION Selected $ReadPackage"
+            MENU="Backup What?
+        [ Note : It will only Backup Data/OBB if it exists ]
+
+        $CAUTION Note : Files means that are stored in Android folder for the Package . Data means the app's saved data.
+        Will restore everything back to normal. e.g Score, Account, Level, Points etc.,."
+            
+            OPTIONS=(
+        1 "Apk Only"
+        2 "Apk + Data ( Recommended )"
+        3 "Apk + OBB [ No Data Restore ]"
+        4 "Apk + OBB,AppData [ No Data Restore ]"
+        5 "Everything (Apk,Data,Files,AppData) - Slow"
+        6 "Cancel"
+        )
+            backupmethod=$(dialog --clear --cancel-label "Exit" \
+                            --backtitle "$BACKTITLE" \
+                            --title "$TITLE" \
+                            --menu "$MENU" \
+                            $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                            "${OPTIONS[@]}" \
+                            2>&1 >/dev/tty)
+
+        case $backupmethod in
+        1)
+            nout mkdir -p "/sdcard/GBackup/Apk/"
+            g_clone "$Package" "/sdcard/GBackup/Apk/${ReadPackage}.apk" 
+
+            dialog --msgbox "$CAUTION Will be saved to Apk Folder in GBackup" 5 50
+            ;;
+        2)
+
+            dialog --msgbox "$CAUTION Can be restored only using this extension" 5 50
+
+            rm /data/GBackup/* -rf
+
+            nout mkdir -p "/data/GBackup/"
+
+            g_clone "$Package" "/data/GBackup/${ReadPackage}.apk" 
+
+            echo "$ReadPackage" > "/data/GBackup/Info.jax"
+            mkdir -p "/data/GBackup/data/"
+            mkdir -p "/data/GBackup/data/$ReadPackage/"
+            g_clone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" 
+
+            backupmethod="1"
+
+            mkdir -p "/sdcard/GBackup/PersonalBkp"
+            cd "/data/GBackup/"
+            (   
+                echo "Creating Archive
+            Please wait....."
+                tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            ) | dialog --progressbox "Backup in progress" 7 50
+
+            ;;
+
+        3)
+            mkdir -p "/sdcard/GBackup/Original/$ReadPackage"
+            g_clone "$Package" "/sdcard/GBackup/Original/$ReadPackage/${ReadPackage}.apk"
+
+            if [[ -d "/sdcard/Android/obb/$ReadPackage" ]]; then
+                mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+                g_clone "/sdcard/Android/obb/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+            else
+                dialog --msgbox "$WARNING No Obb File found
+                        $WARNING Aborting" 6 45
+                rm "/sdcard/GBackup/Original/$ReadPackage/" -r
+                MainMenu
+            fi
+
+        ;;
+
+        4)
+            mkdir -p "/sdcard/GBackup/Original/$ReadPackage"
+            g_clone "$Package" "/sdcard/GBackup/Original/$ReadPackage/${ReadPackage}.apk"
+
+            if [[ -d "/sdcard/Android/data/$ReadPackage" ]];then
+                mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/data/"
+                g_clone "/sdcard/Android/data/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/data/"
+            else
+                dialog --msgbox "$CAUTION No Data Found${RC}" 6 45
+                backupmethod="1"
+            fi
+
+            if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
+                mkdir -p "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+                g_clone "/sdcard/Android/obb/$ReadPackage" "/sdcard/GBackup/Original/$ReadPackage/Android/obb/"
+            fi
+
+            ;;
+
+
+        5)
+            dialog --msgbox "$CAUTION Can be restored only using this extension
+            $TASK Taking a Full Backup. This may take a while" 6 50
+
+            rm /data/GBackup/* -rf
+
+            nout mkdir -p "/data/GBackup/"
+
+            g_clone "$Package" "/data/GBackup/${ReadPackage}.apk"
+
+
+            if [[ -d "/sdcard/Android/data/$ReadPackage" ]];then
+                mkdir -p "/data/GBackup/Android/data/"
+                g_clone "/sdcard/Android/data/$ReadPackage" "/data/GBackup/Android/data/" 
+            fi
+
+            if [[ -d "/sdcard/Android/obb/$ReadPackage" ]];then
+                mkdir -p "/data/GBackup/Android/obb/"
+                g_clone "/sdcard/Android/obb/$ReadPackage" "/data/GBackup/Android/obb/" 
+            fi
+
+            echo "$ReadPackage" > "/data/GBackup/Info.jax"
+            mkdir -p "/data/GBackup/data/"
+            mkdir -p "/data/GBackup/data/$ReadPackage/"
+            g_clone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" 
+
+            backupmethod="1"
+
+            mkdir -p "/sdcard/GBackup/PersonalBkp"
+            cd "/data/GBackup/"
+                        (   
+                echo "Creating Arhive
+            Please wait....."
+                tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            ) | dialog --progressbox "Backup in progress" 7 50
+
+        ;;
+
+        6)
+            dialog --msgbox "$WARNING Cancelled" 5 40
+            MainMenu
+            ;;
+
+        *)
+            dialog --msgbox "$CAUTION Using 2nd Option
+            $CAUTION Can be restored only using this extension" 7 45
+
+            rm /data/GBackup/* -rf
+
+            nout mkdir -p "/data/GBackup/"
+
+            g_clone "$Package" "/data/GBackup/${ReadPackage}.apk" 
+
+            echo "$ReadPackage" > "/data/GBackup/Info.jax"
+            mkdir -p "/data/GBackup/data/"
+            mkdir -p "/data/GBackup/data/$ReadPackage/"
+            g_clone "/data/data/${ReadPackage}/" "/data/GBackup/data/$ReadPackage/" 
+
+            backupmethod="1"
+
+            mkdir -p "/sdcard/GBackup/PersonalBkp"
+            cd "/data/GBackup/"
+                        (   
+                echo "Creating Archive
+            Please wait....."
+                tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
+            ) | dialog --progressbox "Backup in progress" 7 50
+            ;;
+
+        esac
+
+        if [[ $backupmethod != "1" ]];then
+
+
+    HEIGHT=20
+    WIDTH=60
+    CHOICE_HEIGHT=20
+    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    TITLE=" Backup and restore "
+    MENU="Do you want to Make this as an xapk file? or compress to take an personal backup
+        $CAUTION Note : XAPK Files Can be installed using XAPK Installer or you can Share with your friends or upload online."
+
+    OPTIONS=( 1 "Personal Backup ( Recommended )"
+        2 "XAPK File ( for Sharing )"
+        3 "Only Files ( Can be found in Main Storage )"
+    )
+    backupcompress=$(dialog --clear --cancel-label "Exit" \
+                    --backtitle "$BACKTITLE" \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
     
 
-    "Cancel")
-        
-MainMenu
+        case $backupcompress in
 
-;;
+            1)
+                mkdir -p /sdcard/GBackup/PersonalBkp
+                cd "/sdcard/GBackup/Original/$ReadPackage"
+                dialog --msgbox "$TASK Creating Zip Archive in GBackup/PersonalBkp" 7 45
+                7z a "/sdcard/GBackup/PersonalBkp/$ReadPackage.zip" * # | Dialog Progress
+                ;;
 
-    *)
-        file=""
-        geco "Please choose a number from 1 to $((${#files[@]}+1))" ;;
-    esac
-done
+            2)
+                mkdir -p /sdcard/GBackup/XAPK
+                cd "/sdcard/GBackup/Original/$ReadPackage"
+                dialog --msgbox "$TASK Please Wait Creating XAPK File for Sharing in GBackup/XAPK" 7 45
+                7z a "/sdcard/GBackup/XAPK/${ReadPackage}_GBackup.xapk" * # | Dialog Progress
+            ;;
+
+            3)
+                dialog --msgbox "$CAUTION Your Files are not compressed. You can copy it or install it manually after sometime
+                $CAUTION Your Files can be found in your Main Storage by GBackup/Original/$ReadPackage/" 8 50
+
+            ;;
+
+            *)
+                dialog --msgbox "$CAUTION Your Files are not compressed. You can copy it or install it manually after sometime
+                $CAUTION Your Files can be found in your Main Storage by GBackup/Original/$ReadPackage/" 8 50
+            ;;
+
+            esac
+
+        fi
+        dialog --msgbox "$SUCCESS Completed Backing up $ReadPackage" 6 45
+        MainMenu
+    else
+            MainMenu
+    fi
+
 }
 
-function MainMenu()
+function AppRestore() {
 
-{
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|    
-                                                                              $EXT_VERSION
-                                                                              
-                                                                           by SupremeGamers
-                                                                     
-                                                                          [1] Install XAPK File
-                                                                          [2] View Log
-                                                                          [3] Clear Log                                 
-                                                                          [4] Help
-                                                                          [5] About
-                                                                          [6] Exit"
+if [[ -d /sdcard/GBackup/PersonalBkp ]]; then
+
+    cd /sdcard/GBackup/PersonalBkp/
+
+    if [ ! "$(ls -A /sdcard/GBackup/PersonalBkp/)" ]
+        then
+            dialog --msgbox "$WARNING Empty Directory" 6 45
+            MainMenu
+    fi
+
+   
+    ## SNIPPET FROM GEARLOCK ##
+    ## https://github.com/axonasif/gearlock ##
+    ## Thanks to AXON for this snippet ##
 
 
-read -n 1 -p "Option >> " mmi
+    while true; do
+    [ -z "$PWD" ] && PWD="$OLDPWD"
+    i=1 W=(); while read -r line; do W+=($((i++)) "$line"); done < <(  ls -p "$PWD" | grep -v / ); CUR_DIR="$PWD"
+    FILE_NUM="$(dialog --colors --clear --backtitle "$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")" --title " Restore a Backup " --ok-label "Restore" --cancel-label "Cancel" --menu  "\nRestore Backup: \Zb\Z1$CUR_DIR\Zn \n \n" 27 100 40 "${W[@]}" 3>&2 2>&1 1>&3)"; RETC=$?
+    if [ "$RETC" = "0" ]; then # Open button
+        TER="$( ls -p "$PWD" | grep -v / | sed -n "$FILE_NUM p")"
+        if [ -f "$TER" ]; then
+            if [ -n "$(echo "$TER" | grep -E '.tar.gz')" ]; then
+                dialog --msgbox "$TASK This will Restore your Progress" 6 45
+                file="$TER"
+                break
+            elif [ -n "$(echo "$TER" | grep -E '.zip')" ]; then
+                dialog --msgbox "$WARNING This will not Restore your Progress" 6 45
+                file="$TER"
+                break
+            else
+                dialog --msgbox "$WARNING Not a valid Backup" 6 45
+                MainMenu
+                break
+            fi
+        fi
+    else # Back button
+        MainMenu
+        break
+    fi
+done
+    
+    
+                
+if [[ "$file" == *".zip"* ]]; then
 
-case $mmi in
+ext=".zip"
 
-    1)
-Install
-
-;;
-
-    2)
-
-clear
-geco "
-                                                  _    _        ______  _    _    _____                      _ _             
-                                                 \ \  / /  /\  (_____ \| |  / )  (_____)           _        | | |            
-                                                  \ \/ /  /  \  _____) ) | / /      _   ____   ___| |_  ____| | | ____  ____ 
-                                                   )  (  / /\ \|  ____/| |< <      | | |  _ \ /___)  _)/ _  | | |/ _  )/ ___)
-                                                  / /\ \| |__| | |     | | \ \    _| |_| | | |___ | |_( ( | | | ( (/ /| |    
-                                                 /_/  \_\______|_|     |_|  \_)  (_____)_| |_(___/ \___)_||_|_|_|\____)_|    "
-gecpc "Log File" "="
-if [[ -f /sdcard/XAPK-log.txt ]];then
-	gecca /sdcard/XAPK-log.txt
 else
-	geco "No Log found"
-fi
-geco "
-[-] Press any Key to to continue"
-read -n 1 something
-MainMenu
-    ;;
 
-    3)
-clear
-figlet Clearing
-geco "Your XAPK-Installer Log file"
-
-if [[ -f /sdcard/XAPK-log.txt ]];then
-	rm /sdcard/XAPK-log.txt
-	touch /sdcard/XAPK-log.txt
-else
-	geco "No Log found"
+ext=".tar.gz"
 fi
 
+filex=${file//$ext/}
+
+nout rm /data/GRestore/ -rf
+
+
+mkdir -p "/data/GRestore/"
+
+
+if [[ "$file" == *".zip"* ]]; then
+
+
+unzip "${file}" -d "/data/GRestore/" # | Dialog Progress
+
+
+else
+                    (   
+    echo "Extracting Archive
+Please wait....."
+    tar -xpf "$file" -C "/data/GRestore"
+) | dialog --progressbox "Backup in progress" 7 45
+fi
+
+
+dialog --msgbox "$TASK Restoring Backup.. Please Wait" 7 45
+cd "/data/GRestore/"
+                    
+
+            PkgnameR=$(cat Info.jax)
+
+            if [[ -d /data/data/$PkgnameR ]];then
+                dialog --msgbox "$CAUTION App already installed
+            Please uninstall and Restore this backup" 7 45
+            MainMenu
+            fi
+
+            nout pm install *.apk
+
+                    if [[ -d "data" ]];then
+
+
+            cd data
+            g_clone * /data/data/ -r
+            cd ..
+
+
+            # Snippet by AXON
+            ug="$(grep "$PkgnameR" /data/system/packages.list | awk '{print $2}')"
+            chown -hR ${ug}:${ug} /data/data/$PkgnameR
+
+
+            dialog --msgbox "$SUCCESS Your Previous Data was Restored.
+            E.g Score, Level, Account, Progress etc.,. are now restored" 6 65
+            DATAa="True"
+            else
+            dialog --msgbox "$CAUTION No Data found. This is created using 3rd Option.
+            E.g Score, Level, Account, Progress etc.,." 6 65
+            DATAa="False"
+            fi
+
+
+            if [ -d "Android" ]
+            then
+                dialog --msgbox "$TASK Copying App/Game Files" 5 40
+                g_clone "Android" "/sdcard/"
+                dialog --msgbox "$SUCCESS Copied App/Game Files" 5 40
+            fi
+
+            dialog --msgbox "$SUCCESS Restored $PkgnameR Successfully" 6 45
+            MainMenu
+        fi
+
+}
+
+function pausebreak(){
+        geco "$CAUTION Press any [${GREEN}key${RC}] to continue"
+    read -n 1 pausebreakvar
+}
+
+function AboutMenu() {
+    clear
+geco '
+                                      ____             __                  ___        ____            __                
+                                     / __ )____ ______/ /____  ______     ( _ )      / __ \___  _____/ /_____  ________ 
+                                    / __  / __  / ___/ //_/ / / / __ \   / __ \/|   / /_/ / _ \/ ___/ __/ __ \/ ___/ _ \
+                                   / /_/ / /_/ / /__/ ,< / /_/ / /_/ /  / /_/  <   / _, _/  __(__  ) /_/ /_/ / /  /  __/
+                                  /_____/\__,_/\___/_/|_|\__,_/ .___/   \____/\/  /_/ |_|\___/____/\__/\____/_/   \___/
+                                                             /_/'                                                        
+
 geco "
+                                                                        By ${YELLOW}Jaxparrow${RC}                                                      
+
+
+                                     Backup and Restore extension is created by Jaxparrow to Easily Backup/Restore
+                                     And Extract .apk packages from the original ( Installed ) app easily. 
+                                     
+                                     More advanced options available for users to use. (eg. Create XAPK, Create Personal.zip)
+                                     You can only restore the ${YELLOW}Personal Backup${RC} that you have created.
+                                     
+                                     You can also install the ${GREEN}XAPK${RC} files with XAPK INSTALLER ( extension )
+                                     and also using other Third Party XAPK Installers. You can choose to only keep the 
+                                     RAW Files ( without Compressing ) if you want to manually install it later on or
+                                     take a local backup. 
+                                     
+                                     EXTENSION MAKING TIME : 15+ hours. *Only making time
+                                     
+                                     I hardworked on this extension. This extension has more complex
+                                     Text Processing I've ever made. This Extension Invloves in more text Processing
+                                     for Package Selection, Package Backup. Rate this extension if you liked it. 
+                                     
 "
-geco "Done"
-sleep 2
+pausebreak
 MainMenu
+}
 
-;;
+function HelpMenu() {
+    clear
+geco '
+                                      ____             __                  ___        ____            __                
+                                     / __ )____ ______/ /____  ______     ( _ )      / __ \___  _____/ /_____  ________ 
+                                    / __  / __  / ___/ //_/ / / / __ \   / __ \/|   / /_/ / _ \/ ___/ __/ __ \/ ___/ _ \
+                                   / /_/ / /_/ / /__/ ,< / /_/ / /_/ /  / /_/  <   / _, _/  __(__  ) /_/ /_/ / /  /  __/
+                                  /_____/\__,_/\___/_/|_|\__,_/ .___/   \____/\/  /_/ |_|\___/____/\__/\____/_/   \___/
+                                                             /_/'                                                        
 
-    4)
-HTU
-
-;;
-    5)
-About
-
-;;
-    6)
-exit
-
-;;
-
-    *)
 geco "
-No such option"
-sleep 2
-MainMenu
+                                                                        By ${YELLOW}Jaxparrow${RC}                                                      
+                                     
+                                     ${YELLOW}Advanced Backup & Restore :-${RC}
+                                     You can create .xapk .zip or take a personal backup when creating a Backup.
+                                     You can also choose what to backup (e.g. Apk only, Apk+data or Apk+data+obb ).
+                                     Uses unzip to extract archive and g_clone to copy.
 
-;;
-esac
+                                     ${YELLOW}Compression & Creation :-${RC}
+                                     Uses ${GREEN}7z${RC} to Highly compress Archive at lesser time. More faster
+                                     and Stable. Less file size. Max support. zip format archive.
+
+                                     FAQ:
+                    1. What is the difference in the Backup Methods ?
+                    (ANS) 2nd and 4th options contains data which also takes backup of your
+                    Progress, levels, coins etc.,.
+
+                    2. What is the use of the creating xapk or Personal zip ?
+                    (ANS) It'll be useful to share with your friends or if you wish to
+                    reinstall (without progress) on your own.
+
+                    3. Can I install the tar.gz file on my own.
+                    (ANS) No, It can be only installed using This Extension.
+
+
+"
+pausebreak
+MainMenu
+}
+
+function MainMenu() {
+
+nout rm /data/GBackup/* -r
+nout rm /data/GRestore/* -r
+
+
+    HEIGHT=13
+    WIDTH=45
+    CHOICE_HEIGHT=23
+    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    TITLE="Backup and Restore"
+    MENU="Choose an option"
+    
+    OPTIONS=(
+1 "Backup app"
+2 "Restore app"
+3 "Help"
+4 "About"
+)
+    mainmenu=$(dialog --clear --cancel-label "Exit" \
+                    --backtitle "$BACKTITLE" \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
+
+if [ $? -eq 0 ]; then # Exit with OK
+    case $mainmenu in
+        1)
+        AppBackup
+        ;;
+
+        2)
+        AppRestore
+        ;;
+
+        3)
+        HelpMenu
+        ;;
+
+
+        4)
+        AboutMenu
+        ;;
+
+        *)exit;;
+
+    esac
+else
+    exit
+fi
+
 }
 
 MainMenu
