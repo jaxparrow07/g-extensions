@@ -16,30 +16,30 @@ dialog --progressbox "..................... Progress  ======  Speed.............
 function AppBackup() {
 
 HEIGHT=25
-	WIDTH=60
-	CHOICE_HEIGHT=20
-	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
-	TITLE="++++ List of Available Packages ++++"
-	MENU="Select Any Package"
-	
+    WIDTH=60
+    CHOICE_HEIGHT=20
+    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    TITLE="++++ List of Available Packages ++++"
+    MENU="Select Any Package"
+    
     let i=0 # define counting variable
-	OPTIONS=() # define working array
-	while read -r line; do # process file by file
+    OPTIONS=() # define working array
+    while read -r line; do # process file by file
     let i=$i+1
     OPTIONS+=($i "$line")
-	done < <( pm list packages -3 | sed -e 's/package://g' )
-	ReadPackagename=$(dialog --clear --cancel-label "Exit" \
-	                --backtitle "$BACKTITLE" \
-	                --title "$TITLE" \
-	                --menu "$MENU" \
-	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
-	                "${OPTIONS[@]}" \
-	                2>&1 >/dev/tty)
+    done < <( pm list packages -3 | sed -e 's/package://g' )
+    ReadPackagename=$(dialog --clear --cancel-label "Exit" \
+                    --backtitle "$BACKTITLE" \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
 if [ $? -eq 0 ]; then # Exit with OK
     ReadPackage=$(pm list packages -3 | sed -e 's/package://g' | sed "${ReadPackagename}!d")
-	Prefix="package:"
-	Packagepathget=$(pm path "$ReadPackage")
-	Package="${Packagepathget//$Prefix/}"
+    Prefix="package:"
+    Packagepathget=$(pm path "$ReadPackage")
+    Package="${Packagepathget//$Prefix/}"
 
             
             HEIGHT=20
@@ -214,24 +214,24 @@ if [ $? -eq 0 ]; then # Exit with OK
 
 
     HEIGHT=20
-	WIDTH=60
-	CHOICE_HEIGHT=20
-	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
-	TITLE=" Backup and restore "
-	MENU="Do you want to Make this as an xapk file? or compress to take an personal backup
+    WIDTH=60
+    CHOICE_HEIGHT=20
+    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    TITLE=" Backup and restore "
+    MENU="Do you want to Make this as an xapk file? or compress to take an personal backup
         $CAUTION Note : XAPK Files Can be installed using XAPK Installer or you can Share with your friends or upload online."
 
-	OPTIONS=( 1 "Personal Backup ( Recommended )"
+    OPTIONS=( 1 "Personal Backup ( Recommended )"
         2 "XAPK File ( for Sharing )"
         3 "Only Files ( Can be found in Main Storage )"
     )
-	backupcompress=$(dialog --clear --cancel-label "Exit" \
-	                --backtitle "$BACKTITLE" \
-	                --title "$TITLE" \
-	                --menu "$MENU" \
-	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
-	                "${OPTIONS[@]}" \
-	                2>&1 >/dev/tty)
+    backupcompress=$(dialog --clear --cancel-label "Exit" \
+                    --backtitle "$BACKTITLE" \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
     
 
         case $backupcompress in
@@ -291,30 +291,30 @@ if [[ -d /sdcard/GBackup/PersonalBkp ]]; then
 
 
     while true; do
-	[ -z "$PWD" ] && PWD="$OLDPWD"
-	i=1 W=(); while read -r line; do W+=($((i++)) "$line"); done < <(  ls -p "$PWD" | grep -v / ); CUR_DIR="$PWD"
-	FILE_NUM="$(dialog --colors --clear --backtitle "$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")" --title " Restore a Backup " --ok-label "Restore" --cancel-label "Cancel" --menu  "\nRestore Backup: \Zb\Z1$CUR_DIR\Zn \n \n" 27 100 40 "${W[@]}" 3>&2 2>&1 1>&3)"; RETC=$?
-	if [ "$RETC" = "0" ]; then # Open button
-		TER="$( ls -p "$PWD" | grep -v / | sed -n "$FILE_NUM p")"
-		if [ -f "$TER" ]; then
-			if [ -n "$(echo "$TER" | grep -E '.tar.gz')" ]; then
-	            dialog --msgbox "$TASK This will Restore your Progress" 6 45
-				file="$TER"
-				break
-			elif [ -n "$(echo "$TER" | grep -E '.zip')" ]; then
-	            dialog --msgbox "$WARNING This will not Restore your Progress" 6 45
-				file="$TER"
-				break
-			else
-	            dialog --msgbox "$WARNING Not a valid Backup" 6 45
-	            MainMenu
-				break
-			fi
-		fi
-	else # Back button
-		MainMenu
-		break
-	fi
+    [ -z "$PWD" ] && PWD="$OLDPWD"
+    i=1 W=(); while read -r line; do W+=($((i++)) "$line"); done < <(  ls -p "$PWD" | grep -v / ); CUR_DIR="$PWD"
+    FILE_NUM="$(dialog --colors --clear --backtitle "$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")" --title " Restore a Backup " --ok-label "Restore" --cancel-label "Cancel" --menu  "\nRestore Backup: \Zb\Z1$CUR_DIR\Zn \n \n" 27 100 40 "${W[@]}" 3>&2 2>&1 1>&3)"; RETC=$?
+    if [ "$RETC" = "0" ]; then # Open button
+        TER="$( ls -p "$PWD" | grep -v / | sed -n "$FILE_NUM p")"
+        if [ -f "$TER" ]; then
+            if [ -n "$(echo "$TER" | grep -E '.tar.gz')" ]; then
+                dialog --msgbox "$TASK This will Restore your Progress" 6 45
+                file="$TER"
+                break
+            elif [ -n "$(echo "$TER" | grep -E '.zip')" ]; then
+                dialog --msgbox "$WARNING This will not Restore your Progress" 6 45
+                file="$TER"
+                break
+            else
+                dialog --msgbox "$WARNING Not a valid Backup" 6 45
+                MainMenu
+                break
+            fi
+        fi
+    else # Back button
+        MainMenu
+        break
+    fi
 done
     
     
@@ -465,16 +465,16 @@ geco "
                                      and Stable. Less file size. Max support. zip format archive.
 
                                      FAQ:
-					1. What is the difference in the Backup Methods ?
-					(ANS) 2nd and 4th options contains data which also takes backup of your
-					Progress, levels, coins etc.,.
+                    1. What is the difference in the Backup Methods ?
+                    (ANS) 2nd and 4th options contains data which also takes backup of your
+                    Progress, levels, coins etc.,.
 
-					2. What is the use of the creating xapk or Personal zip ?
-					(ANS) It'll be useful to share with your friends or if you wish to
-					reinstall (without progress) on your own.
+                    2. What is the use of the creating xapk or Personal zip ?
+                    (ANS) It'll be useful to share with your friends or if you wish to
+                    reinstall (without progress) on your own.
 
-					3. Can I install the tar.gz file on my own.
-					(ANS) No, It can be only installed using This Extension.
+                    3. Can I install the tar.gz file on my own.
+                    (ANS) No, It can be only installed using This Extension.
 
 
 "
@@ -488,26 +488,26 @@ nout rm /data/GBackup/* -r
 nout rm /data/GRestore/* -r
 
 
-	HEIGHT=13
-	WIDTH=45
-	CHOICE_HEIGHT=23
-	BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
-	TITLE="Backup and Restore"
-	MENU="Choose an option"
-	
-	OPTIONS=(
+    HEIGHT=13
+    WIDTH=45
+    CHOICE_HEIGHT=23
+    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    TITLE="Backup and Restore"
+    MENU="Choose an option"
+    
+    OPTIONS=(
 1 "Backup app"
 2 "Restore app"
 3 "Help"
 4 "About"
 )
-	mainmenu=$(dialog --clear --cancel-label "Exit" \
-	                --backtitle "$BACKTITLE" \
-	                --title "$TITLE" \
-	                --menu "$MENU" \
-	                $HEIGHT $WIDTH $CHOICE_HEIGHT \
-	                "${OPTIONS[@]}" \
-	                2>&1 >/dev/tty)
+    mainmenu=$(dialog --clear --cancel-label "Exit" \
+                    --backtitle "$BACKTITLE" \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
 
 if [ $? -eq 0 ]; then # Exit with OK
     case $mainmenu in
