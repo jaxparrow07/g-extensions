@@ -1,9 +1,7 @@
 get_base_dir
 
 geco "
-[!] THIS WILL UPDATE YOUR FONT FILES
-
-[-] : Fix Missing/Blank fonts for every Games/Apps.
+[-] : Fix Missing/Blank fonts for every Games/Apps like Free Fire
 
 [!] Your Fonts will be restored once uninstalled
 
@@ -23,13 +21,12 @@ rm fonts.7z
 # fonts.xml
 mv "/system/etc/fonts.xml" "/system/etc/fonts.xml.bak"
 cp "fonts.xml" "/system/etc/"
+chmod 655 /system/etc/fonts.xml
 
 # fonts
-cd fonts/
 mkdir -p /data/.fonts.bak/
-cp /system/fonts/* /data/.fonts.bak/
-rm /system/fonts/*
-cp * /system/fonts/
-chmod 644 /system/fonts/*
+mv /system/fonts/* /data/.fonts.bak/
+cp fonts/* /system/fonts/
+chmod 655 /system/fonts/*
 
 rm "/data/.FFTemp/" -r
