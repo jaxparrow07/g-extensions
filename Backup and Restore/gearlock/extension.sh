@@ -15,10 +15,10 @@ dialog --progressbox "..................... Progress  ======  Speed.............
 
 function AppBackup() {
 
-HEIGHT=25
+    HEIGHT=25
     WIDTH=60
     CHOICE_HEIGHT=20
-    BACKTITLE=$(gecpc "Made By Jaxparrow | GUI by Xtr" "_")
+    BACKTITLE="Made By Jaxparrow"
     TITLE="++++ List of Available Packages ++++"
     MENU="Select Any Package"
     
@@ -35,6 +35,7 @@ HEIGHT=25
                     $HEIGHT $WIDTH $CHOICE_HEIGHT \
                     "${OPTIONS[@]}" \
                     2>&1 >/dev/tty)
+
 if [ $? -eq 0 ]; then # Exit with OK
     ReadPackage=$(pm list packages -3 | sed -e 's/package://g' | sed "${ReadPackagename}!d")
     Prefix="package:"
