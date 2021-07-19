@@ -2,13 +2,33 @@
 
 # Defining indicators
 
+
+
+    cd /system/media
+    [ -f bootanimation-after-first-boot.zip ] && bootanimation_name=bootanimation-after-first-boot.zip || bootanimation_name=bootanimation.zip
+        mv $bootanimation_name bootanimation.bak
+        ln -s $DEPDIR/backup_and_restore_animation.zip $bootanimation_name
+        chmod 644 $bootanimation_name
+
+        n=$(fgconsole) 
+        
+        if [ "$TERMINAL_EMULATOR" == "yes" ]; then
+         bootanimation && rm $bootanimation_name
+         
+        else
+        chvt 7 && bootanimation && chvt $n && rm $bootanimation_name  
+        fi 
+        mv bootanimation.bak $bootanimation_name
+
+        
+
 WARNING="[!]"
 SUCCESS="[+]"
 CAUTION="[-]"
 TASK="[*]"
 
 function g_clone() {
-(rsync -ah --info=progress2 "$@" -p) 2>&1 | \
+(rsync -ah --info=progress2 "$@") 2>&1 | \
 dialog --progressbox "..................... Progress  ======  Speed.............." 7 80
 }
 
