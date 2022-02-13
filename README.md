@@ -13,4 +13,4 @@ For details on how to use this and more details.<br>
 https://supreme-gamers.com/gearlock/
 
 # Additional Info
-This is maintained by me ( Jaxparrow ) and I will update these with also with my extension updates.
+This is maintained by me ( Jaxparrow ) and I will update these along with my extension updates.
