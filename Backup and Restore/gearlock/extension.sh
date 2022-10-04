@@ -2,34 +2,49 @@
 
 # Defining indicators
 
-
-
-    cd /system/media
-    [ -f bootanimation-after-first-boot.zip ] && bootanimation_name=bootanimation-after-first-boot.zip || bootanimation_name=bootanimation.zip
-        mv $bootanimation_name bootanimation.bak
-        ln -s $DEPDIR/backup_and_restore_animation.zip $bootanimation_name
-        chmod 644 $bootanimation_name
-
-        n=$(fgconsole) 
-        
-        if [ "$TERMINAL_EMULATOR" == "yes" ]; then
-         bootanimation && rm $bootanimation_name
-         
-        else
-        chvt 7 && bootanimation && chvt $n && rm $bootanimation_name  
-        fi 
-        mv bootanimation.bak $bootanimation_name
-
-        
-
 WARNING="[!]"
 SUCCESS="[+]"
 CAUTION="[-]"
 TASK="[*]"
 
+cd /system/media
+
+if [ -f bootanimation-after-first-boot.zip ]; then 
+    bootanimation_name=bootanimation-after-first-boot.zip
+else 
+    bootanimation_name=bootanimation.zip
+fi
+
+mv $bootanimation_name bootanimation.bak
+ln -s $DEPDIR/backup_and_restore_animation.zip $bootanimation_name
+chmod 644 $bootanimation_name
+
+n=$(fgconsole) 
+
+if [ "$TERMINAL_EMULATOR" == "yes" ]; then
+    bootanimation && rm $bootanimation_name
+else
+    chvt 7 && bootanimation && chvt $n && rm $bootanimation_name  
+fi 
+
+mv bootanimation.bak $bootanimation_name
+
+function gclone_process() {
+    while read -a data; do
+        echo XXX
+        echo "${data[1]//[!0-9]/}"
+        echo "Transferred data -> ${data[0]}"
+        echo "Speed ->>>>> ${data[2]}"
+        echo "Time left -> ${data[3]}"
+        echo "${data[4]} ${data[5]}" 
+        echo XXX
+    done
+}
+
 function g_clone() {
-(rsync -ah --info=progress2 "$@") 2>&1 | \
-dialog --progressbox "..................... Progress  ======  Speed.............." 7 80
+    stdbuf -o0 -e0 rsync -ah --info=progress2 "$@" | \
+    stdbuf -o0 tr '\r' '\n' | gclone_process | \
+    dialog --title "rsync $*" --gauge "Initializing.." 10 50
 }
 
 
@@ -162,7 +177,7 @@ if [ $? -eq 0 ]; then # Exit with OK
 
         5)
             dialog --msgbox "$CAUTION Can be restored only using this extension
-            $TASK Taking a Full Backup. This may take a while" 6 50
+            $TASK Taking a Full Backup. This may take a while" 6 55
 
             rm /data/GBackup/* -rf
 
@@ -191,7 +206,7 @@ if [ $? -eq 0 ]; then # Exit with OK
             mkdir -p "/sdcard/GBackup/PersonalBkp"
             cd "/data/GBackup/"
                         (   
-                echo "Creating Arhive
+                echo "Creating Archive
             Please wait....."
                 tar -pczf "/sdcard/GBackup/PersonalBkp/${ReadPackage}_GBackup.tar.gz" *
             ) | dialog --progressbox "Backup in progress" 7 50
